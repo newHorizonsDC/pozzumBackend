@@ -9,6 +9,7 @@
   "dependencies": {
     "socket.io": "latest",
     "express": "3.4.8",
-    "mongodb": "2.1.0"
+    "mongodb": "2.1.0",
+    "crypto": "latest"
   }
 }
