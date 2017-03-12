@@ -1,15 +1,14 @@
 {
-  "name": "socket.io-chat",
+  "name": "pozzumBackendv2",
   "version": "0.0.0",
-  "description": "A simple chat client using socket.io",
-  "main": "index.js",
-  "author": "Grant Timmerman",
+  "description": "a simple server",
+  "main": "server.js",
+  "author": "Peder",
   "private": true,
   "license": "BSD",
   "dependencies": {
-    "socket.io": "latest",
-    "express": "3.4.8",
-    "mongodb": "2.1.0",
-    "crypto": "latest"
+    "mongodb": "latest",
+    "express": "latest",
+    "body-parser": "latest"
   }
 }

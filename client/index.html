@@ -1,0 +1,24 @@
+<html>
+<body>
+    <p>Type in username <input type="text" id="username" placeholder="Username"/></p>
+    <p>Type in password <input type="password" id="password" placeholder="Password"/></p>
+   <p><button onclick="addUser()">Submit</button></p>
+    <p id="userAdded"></p>
+
+<script type="text/JavaScript">
+    function addUser() {
+        console.log(document.getElementById("username").value);
+        var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
+        xmlhttp.open("POST", "/addUser");
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        xmlhttp.send(JSON.stringify({"username": document.getElementById("username").value,
+            "password": document.getElementById("password").value}));
+
+        document.getElementById("userAdded").innerHTML = "POST response sent";
+        setTimeout(function(){window.location="index.html"}, 1000);
+    }
+
+</script>
+
+</body>
+</html>
