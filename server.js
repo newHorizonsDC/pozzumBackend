@@ -5,7 +5,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
-var url = 'mongodb://localhost:27017/test';
+var url = 'mongodb://localhost:27017/test2';
 
 var app = express();
 console.log("Server listening on port 3000");
@@ -24,7 +24,7 @@ app.post('/addUser', function(request, response) {
         db.collection("users").findOne({"username": username},
             function (err, collection) {
                 if (collection) {
-                    console.log("Username is taken")
+                    console.log("Username is taken");
                     response.json({"status": "taken"});
                 }
                 else {  
@@ -37,7 +37,7 @@ app.post('/addUser', function(request, response) {
     });
 });
 
-app.get('/login',function(request,response){
+app.post('/login',function(request,response){
     console.log(request.body);      // print json object
     var username = request.body.username;
     var password = request.body.password;
@@ -63,6 +63,35 @@ app.get('/login',function(request,response){
             });
     });
 });
+// --------------------------- Home Screen --------------------------- \\
+/*app.post('/find',function(request, response){
+    console.log(request.body);      // print json object
+    var username = request.body.username;
+
+    connectDb(function (db) {
+        db.collection("users").findOne({ "username": username },
+            function (err, collection) {
+                response.json({"name": collection.password});
+            });
+    });
+});*/
+
+app.post('/find',function(request, response){
+
+    connectDb(function (db) {
+        db.collection("users").find({}).toArray(function(err, documents){
+            var users = [];
+            for (var i = 0; i < documents.length; i++){
+                users.push(documents[i].username);
+            }
+            response.json({"users": documents});
+        });
+
+    });
+});
+
+// --------------------------- Chat --------------------------- \\
+//TODO lol..
 
 var connectDb = function(operation){
     MongoClient.connect(url, function(err,db){
