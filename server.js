@@ -28,7 +28,7 @@ app.post('/addUser', function(request, response) {
                     response.json({"status": "taken"});
                 }
                 else {  
-                    db.collection('users').insertOne( {"username": username, "password": password});
+                    db.collection('users').insertOne( {"username": username, "password": password, "online": "false"});
                     console.log("User added to database");
                     db.close(); // Only close database if an user has been added (prevents instance pool destroyed error).
                     response.json({"status": "ok"});
@@ -89,6 +89,31 @@ app.post('/find',function(request, response){
 
     });
 });
+
+// --------------------------- change user online --------------------------- \\
+app.post('/online',function(request, response){
+
+    var username = request.body.username;
+    var online = request.body.isOnline;
+
+    connectDb(function (db) {
+        var coll = db.collection("users");
+
+        coll.updateOne({
+            "username": username
+        }, {
+            $set: {
+                "online": online
+            }
+        }, function(err, results) {
+            console.log(results.result);
+        });
+        response.json({"response": "ok"});
+
+        db.close();
+    });
+});
+
 
 // --------------------------- Chat --------------------------- \\
 //TODO lol..
