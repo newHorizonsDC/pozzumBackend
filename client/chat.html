@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <title>Simple DataChannel</title>
+        <link rel="stylesheet" media="screen" href="stylesheets/main.css">
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    </head>
+    <body>
+        <form id="idform" action="">
+            <input type="text" id="user" placeholder="e.g. Alice">
+            <button id="setid">Set your name</button>
+        </form>
+        <button id="ws-connect">Connect to WebSocket</button>
+        <form id="dcform" action="">
+            <input type="text" id="connectTo" placeholder="e.g. Bob">
+            <button id="dc-connect">Connect to</button>
+        </form>
+        <form id="sendform" action="">
+            <input type="text" id="message">
+            <button id="send">Send Text over DataChannel</button>
+        </form>
+    </body>
+
+    <script src="app.js"></script>
+</html>

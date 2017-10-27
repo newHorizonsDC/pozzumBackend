@@ -9,6 +9,8 @@
   "dependencies": {
     "mongodb": "latest",
     "express": "latest",
-    "body-parser": "latest"
+    "body-parser": "latest",
+    "ws": "v0.4.31",
+    "express": "3.0.0"
   }
 }

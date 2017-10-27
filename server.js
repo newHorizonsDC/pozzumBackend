@@ -1,3 +1,24 @@
+var WebSocket = require("ws");
+var WebSocketServer = require('ws').Server;
+var wss = new WebSocketServer({port: 8088});
+
+var wsList = {};
+
+wss.on('connection', function(ws){
+    wsList[ws.upgradeReq.url.slice(1)] = ws;
+    console.log('WS connection established!')
+
+    ws.on('close', function(){ wsList.splice(wsList.indexOf(ws),1);
+        console.log('WS closed!');
+    });
+
+    ws.on('message', function(message){
+        console.log('Got ws message: '+message);
+        var Message = JSON.parse(message)
+        wsList[Message['to']].send(message);
+    });
+});
+
 /**
  * Created by PederGB on 11.03.2017.
  */

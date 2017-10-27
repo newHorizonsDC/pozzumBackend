@@ -1,24 +1,34 @@
 <html>
+    <head>
+        <title>Pozzum</title>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    </head>
 <body>
+    <p>New user</p>
     <p>Type in username <input type="text" id="username" placeholder="Username"/></p>
     <p>Type in password <input type="password" id="password" placeholder="Password"/></p>
    <p><button onclick="addUser()">Submit</button></p>
     <p id="userAdded"></p>
+    <p>login as existing user</p>
+    <p>Type in username <input type="text" id="username" placeholder="Username"/></p>
+    <p>Type in password <input type="password" id="password" placeholder="Password"/></p>
+   <p><button onclick="login()">Login</button></p>
 
-<script type="text/JavaScript">
-    function addUser() {
-        console.log(document.getElementById("username").value);
-        var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
-        xmlhttp.open("POST", "/addUser");
-        xmlhttp.setRequestHeader("Content-Type", "application/json");
-        xmlhttp.send(JSON.stringify({"username": document.getElementById("username").value,
-            "password": document.getElementById("password").value}));
-
-        document.getElementById("userAdded").innerHTML = "POST response sent";
-        setTimeout(function(){window.location="index.html"}, 1000);
-    }
-
-</script>
+   <form id="idform" action="">
+       <input type="text" id="user" placeholder="e.g. Alice">
+       <button id="setid">Set your name</button>
+   </form>
+   <button id="ws-connect">Connect to WebSocket</button>
+   <form id="dcform" action="">
+       <input type="text" id="connectTo" placeholder="e.g. Bob">
+       <button id="dc-connect">Connect to</button>
+   </form>
+   <form id="sendform" action="">
+       <input type="text" id="message">
+       <button id="send">Send Text over DataChannel</button>
+   </form>
 
 </body>
+
+    <script src="app.js"></script>
 </html>
