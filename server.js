@@ -1,27 +1,6 @@
 var WebSocket = require("ws");
 var WebSocketServer = require('ws').Server;
 var wss = new WebSocketServer({port: 8088});
-
-var wsList = {};
-
-wss.on('connection', function(ws){
-    wsList[ws.upgradeReq.url.slice(1)] = ws;
-    console.log('WS connection established!')
-
-    ws.on('close', function(){ wsList.splice(wsList.indexOf(ws),1);
-        console.log('WS closed!');
-    });
-
-    ws.on('message', function(message){
-        console.log('Got ws message: '+message);
-        var Message = JSON.parse(message)
-        wsList[Message['to']].send(message);
-    });
-});
-
-/**
- * Created by PederGB on 11.03.2017.
- */
 var express = require('express');
 var bodyParser = require('body-parser');
 var MongoClient = require('mongodb').MongoClient;
@@ -145,3 +124,58 @@ var connectDb = function(operation){
         operation(db);
     });
 };
+
+
+
+// --------------------------- Webrtc ------------------------- \\
+
+var wsList = {};
+
+wss.on('connection', function(ws){
+
+    var usernamePassword = ws.upgradeReq.url.split('/');
+    var username = usernamePassword[1], password = usernamePassword[2];
+    ws.username = username;
+    connectDb(function (db) {
+        db.collection("users").findOne({ "username": username },
+            function (err, collection) {
+                if (collection) {
+                    console.log("user exists");
+                    if (collection.password == password){
+                        console.log("correct password");
+                        if (username in wsList){
+                            ws.close()
+                            console.log('already logged in');
+                        } else {
+                            wsList[username] = ws;
+                            console.log('login success');
+                        }
+                    }
+                    else{
+                        console.log("wrong password");
+                        ws.close()
+                    }
+                }
+                else {
+                    console.log("no user");
+                    ws.close()
+                }
+            });
+    });
+
+    ws.on('close', function(){
+        if (wsList[ws.username] === ws){
+            delete wsList[ws.username];
+            console.log('connection with '+ws.username+' was closed!');
+        } else {
+            console.log('new connection with '+ws.username+' was rejected!');
+        }
+    });
+
+    ws.on('message', function(message){
+        console.log('Got ws message: '+message);
+        var Message = JSON.parse(message)
+        wsList[Message['to']].send(message);
+    });
+});
+

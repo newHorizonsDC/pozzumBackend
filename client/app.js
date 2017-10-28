@@ -1,43 +1,26 @@
-
-function addUser() {
-    console.log(document.getElementById("username").value);
-    var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
-    xmlhttp.open("POST", "/addUser");
-    xmlhttp.setRequestHeader("Content-Type", "application/json");
-    xmlhttp.send(JSON.stringify({"username": document.getElementById("username").value,
-        "password": document.getElementById("password").value}));
-
-    document.getElementById("userAdded").innerHTML = "POST response sent";
-    setTimeout(function(){window.location="index.html"}, 1000);
-}
-
 const SERVER_IP = "127.0.0.1"
 
-$("#ws-connect").hide();
 $("#dcform").hide();
 $("#sendform").hide();
 
-$("#idform").submit(setMyId);
+$("#idform").submit(login);
 $("#dcform").submit(connectTo);
 $("#sendform").submit(sendDirect);
 
-$("#setid").click(setMyId);
+$("#login").click(login);
 $("#dc-connect").click(connectTo);
 $("#send").click(sendDirect);
 
 var ws = null;
-var user = "";
+var user = "", password = "";
 var user2 = "";
 
-function setMyId(e){
+function login(e){
     e.preventDefault();
     user = $("#user").val();
-    $("#ws-connect").show();
-    return false;
-}
+    password = $('#password').val()
 
-$("#ws-connect").click(function(){
-    ws = new WebSocket("ws://" + SERVER_IP + ":8088/" + user);
+    ws = new WebSocket("ws://" + SERVER_IP + ":8088/" + user + '/' + password);
 
     ws.onopen = function(e){    
         console.log("Websocket opened");
@@ -79,7 +62,8 @@ $("#ws-connect").click(function(){
     ws.onerror = function(e){   
         console.log("Websocket error");
     }
-});
+    return false;
+}
 
 var config = {"iceServers":[{"url":"stun:stun.l.google.com:19302"}]};
 var connection = {};
