@@ -2,7 +2,7 @@
 
 Implements P2P simplistic messaging.
 
-Install dependencies:
+Install dependencies (locally):
 ```
 npm install
 ```
