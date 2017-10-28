@@ -34,7 +34,6 @@ function login(e){
         $("#idform").hide();
     }
     ws.onclose = function(e){   
-        clear();
         console.log("Websocket closed");
     }
     ws.onmessage = function(e){ 
