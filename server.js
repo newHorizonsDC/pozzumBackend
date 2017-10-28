@@ -174,8 +174,9 @@ wss.on('connection', function(ws){
 
     ws.on('message', function(message){
         console.log('Got ws message: '+message);
-        var Message = JSON.parse(message)
-        wsList[Message['to']].send(message);
+        var receiver = JSON.parse(message)['to'];
+        if (receiver in wsList)
+            wsList[receiver].send(message);
     });
 });
 

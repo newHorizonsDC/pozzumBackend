@@ -1,8 +1,5 @@
 const SERVER_IP = "127.0.0.1"
 
-$("#dcform").hide();
-$("#sendform").hide();
-
 $("#idform").submit(login);
 $("#dcform").submit(connectTo);
 $("#sendform").submit(sendDirect);
@@ -10,6 +7,15 @@ $("#sendform").submit(sendDirect);
 $("#login").click(login);
 $("#dc-connect").click(connectTo);
 $("#send").click(sendDirect);
+
+function clear(){
+
+    $("#idform").show();
+    $("#dcform").hide();
+    $("#sendform").hide();
+}
+clear()
+
 
 var ws = null;
 var user = "", password = "";
@@ -25,8 +31,10 @@ function login(e){
     ws.onopen = function(e){    
         console.log("Websocket opened");
         $("#dcform").show();
+        $("#idform").hide();
     }
     ws.onclose = function(e){   
+        clear();
         console.log("Websocket closed");
     }
     ws.onmessage = function(e){ 
