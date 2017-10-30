@@ -2,18 +2,40 @@ var WebSocket = require("ws");
 var WebSocketServer = require('ws').Server;
 var wss = new WebSocketServer({port: 8088});
 var express = require('express');
+var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
 var bodyParser = require('body-parser');
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
-var url = 'mongodb://localhost:27017/test2';
+var cookie = require('cookie');
+var cookieParser = require('cookie-parser')
+
+var dbUrl = 'mongodb://localhost:27017/test2';
 
 var app = express();
 console.log("Server listening on port 3000");
 
+var connectDb = function(operation){
+    MongoClient.connect(dbUrl, function(err,db){
+        assert.equal(null, err);
+        operation(db);
+    });
+};
+
+var sessionStore = new MongoStore({ url: dbUrl}); // reuse db for session storage
+
+var cookieSecret = 'secret key';
+// app.set('trust proxy', 1)
+app.use(session({
+    secret: cookieSecret,
+        store: sessionStore,
+        resave: false,
+        saveUninitialized: true,
+        cookie: { /*secure: true,*/ maxAge: null, httpOnly: false }
+}));
 app.use(bodyParser.json());
 app.listen(3000);
 app.use(express.static(__dirname + '/client'));
-
 
 app.post('/addUser', function(request, response) {
     console.log(request.body);      // print json object
@@ -49,6 +71,8 @@ app.post('/login',function(request,response){
                     console.log("user exists");
                     if (collection.password == password){
                         console.log("login success");
+                        request.session.user = username;
+                        request.session.save();
                         response.json({"status": "ok"});
                     }
                     else{
@@ -115,68 +139,54 @@ app.post('/online',function(request, response){
 });
 
 
-// --------------------------- Chat --------------------------- \\
-//TODO lol..
-
-var connectDb = function(operation){
-    MongoClient.connect(url, function(err,db){
-        assert.equal(null, err);
-        operation(db);
-    });
-};
-
-
-
 // --------------------------- Webrtc ------------------------- \\
 
 var wsList = {};
 
-wss.on('connection', function(ws){
+wss.on('connection', function(ws, req){
 
-    var usernamePassword = ws.upgradeReq.url.split('/');
-    var username = usernamePassword[1], password = usernamePassword[2];
-    ws.username = username;
-    connectDb(function (db) {
-        db.collection("users").findOne({ "username": username },
-            function (err, collection) {
-                if (collection) {
-                    console.log("user exists");
-                    if (collection.password == password){
-                        console.log("correct password");
-                        if (username in wsList){
-                            ws.close()
-                            console.log('already logged in');
-                        } else {
-                            wsList[username] = ws;
-                            console.log('login success');
-                        }
-                    }
-                    else{
-                        console.log("wrong password");
-                        ws.close()
-                    }
-                }
-                else {
-                    console.log("no user");
-                    ws.close()
-                }
-            });
-    });
+    console.log(req.url)
+    var cookies=cookie.parse(req.url.substr(1));
+    console.log(cookies)
+    var sid=cookieParser.signedCookie(cookies["connect.sid"],cookieSecret);
+    sessionStore.get(sid,function(err, ss){
+        sessionStore.createSession(req,ss)
 
-    ws.on('close', function(){
-        if (wsList[ws.username] === ws){
-            delete wsList[ws.username];
-            console.log('connection with '+ws.username+' was closed!');
+        var user = ''
+        if ('user' in req.session)
+            user = req.session.user;
+        else
+            ws.close();
+
+        if (user in wsList){
+            ws.close()
+            console.log('duplicate session for '+user);
         } else {
-            console.log('new connection with '+ws.username+' was rejected!');
+            ws.user = user;
+            wsList[user] = ws;
+            console.log('login success');
         }
-    });
 
-    ws.on('message', function(message){
-        console.log('Got ws message: '+message);
-        var receiver = JSON.parse(message)['to'];
-        if (receiver in wsList)
-            wsList[receiver].send(message);
+        ws.on('close', function(){
+            if (wsList[ws.user] === ws){
+                delete wsList[ws.user];
+                console.log('connection with '+ws.user+' was closed!');
+            } else {
+                console.log('new connection with '+ws.user+' was rejected!');
+            }
+        });
+
+        ws.on('message', function(message){
+            console.log('Got ws message: '+message);
+            var Message = JSON.parse(message);
+            if (Message.action == "offer"){
+                Message.from = ws.user;
+                message = JSON.stringify(Message);
+            }
+            var receiver = JSON.parse(message)['to'];
+            if (receiver in wsList)
+                wsList[receiver].send(message);
+        });
     });
 });
 

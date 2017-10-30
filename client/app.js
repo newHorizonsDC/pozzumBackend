@@ -1,76 +1,18 @@
 const SERVER_IP = "127.0.0.1"
 
-$("#idform").submit(login);
 $("#dcform").submit(connectTo);
 $("#sendform").submit(sendDirect);
 
-$("#login").click(login);
 $("#dc-connect").click(connectTo);
 $("#send").click(sendDirect);
 
-function clear(){
-
-    $("#idform").show();
-    $("#dcform").hide();
-    $("#sendform").hide();
-}
-clear()
+$("#status").show();
+$("#dcform").hide();
+$("#sendform").hide();
 
 
 var ws = null;
-var user = "", password = "";
 var user2 = "";
-
-function login(e){
-    e.preventDefault();
-    user = $("#user").val();
-    password = $('#password').val()
-
-    ws = new WebSocket("ws://" + SERVER_IP + ":8088/" + user + '/' + password);
-
-    ws.onopen = function(e){    
-        console.log("Websocket opened");
-        $("#dcform").show();
-        $("#idform").hide();
-    }
-    ws.onclose = function(e){   
-        console.log("Websocket closed");
-    }
-    ws.onmessage = function(e){ 
-        console.log("Websocket message received: " + e.data);
-
-        var json = JSON.parse(e.data);
-
-        if(json.action == "candidate"){
-            if(json.to == user){
-              processIce(json.data);
-            }
-        } else if(json.action == "offer"){
-            // incoming offer
-            if(json.to == user){
-                user2 = json.from;
-                processOffer(json.data)
-            }
-        } else if(json.action == "answer"){
-            // incoming answer
-            if(json.to == user){
-                processAnswer(json.data);
-            }
-        } 
-        // else if(json.action == "id"){
-        //    userId = json.data;
-        // } else if(json.action=="newUser"){
-        //     if(userId!=null && json.data!=userId){
-
-        //     }
-        // }
-
-    }
-    ws.onerror = function(e){   
-        console.log("Websocket error");
-    }
-    return false;
-}
 
 var config = {"iceServers":[{"url":"stun:stun.l.google.com:19302"}]};
 var connection = {};
@@ -141,9 +83,9 @@ function openDataChannel (){
 }
 
 function sendNegotiation(type, sdp){
-    var json = { from: user, to: user2, action: type, data: sdp};
+    var json = { to: user2, action: type, data: sdp};
     ws.send(JSON.stringify(json));
-    console.log("Sending ["+user+"] to ["+user2+"]: " + JSON.stringify(sdp));
+    console.log("Sending to ["+user2+"]: " + JSON.stringify(sdp));
 }
 
 function processOffer(offer){
@@ -184,3 +126,45 @@ function processIce(iceCandidate){
         console.log(e)
     })
 }
+
+(function(){
+
+    ws = new WebSocket("ws://" + SERVER_IP + ":8088/" + document.cookie);
+
+    ws.onopen = function(e){
+        console.log("Websocket opened");
+        $("#status").hide();
+        $("#dcform").show();
+    }
+    ws.onclose = function(e){
+        console.log("Websocket closed");
+    }
+    ws.onmessage = function(e){
+        console.log("Websocket message received: " + e.data);
+
+        var json = JSON.parse(e.data);
+
+        if(json.action == "candidate"){
+            processIce(json.data);
+        } else if(json.action == "offer"){
+            // incoming offer
+            user2 = json.from;
+            processOffer(json.data)
+        } else if(json.action == "answer"){
+            // incoming answer
+            processAnswer(json.data);
+        } 
+        // else if(json.action == "id"){
+        //    userId = json.data;
+        // } else if(json.action=="newUser"){
+        //     if(userId!=null && json.data!=userId){
+
+        //     }
+        // }
+
+    }
+    ws.onerror = function(e){   
+        console.log("Websocket error");
+    }
+    return false;
+})();

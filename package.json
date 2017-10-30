@@ -9,8 +9,11 @@
   "dependencies": {
     "mongodb": "latest",
     "express": "latest",
+    "express-session": "latest",
+    "connect-mongo": "latest",
     "body-parser": "latest",
-    "ws": "v0.4.31",
-    "express": "3.0.0"
+    "cookie-parser": "latest",
+    "ws": "latest",
+    "express": "latest"
   }
 }
