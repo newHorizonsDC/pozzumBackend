@@ -1,4 +1,4 @@
-const SERVER_IP = "127.0.0.1"
+const SERVER_IP = "10.0.0.5"
 
 $("#dcform").submit(connectTo);
 $("#sendform").submit(sendDirect);

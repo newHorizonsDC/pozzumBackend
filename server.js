@@ -70,8 +70,9 @@ app.post('/login',function(request,response){
                 if (collection) {
                     console.log("user exists");
                     if (collection.password == password){
-                        console.log("login success");
+                        console.log("logging in as " + username);
                         request.session.user = username;
+                        console.log(request.session);
                         request.session.save();
                         response.json({"status": "ok"});
                     }
@@ -115,28 +116,28 @@ app.post('/find',function(request, response){
 });
 
 // --------------------------- change user online --------------------------- \\
-app.post('/online',function(request, response){
-
-    var username = request.body.username;
-    var online = request.body.isOnline;
-
-    connectDb(function (db) {
-        var coll = db.collection("users");
-
-        coll.updateOne({
-            "username": username
-        }, {
-            $set: {
-                "online": online
-            }
-        }, function(err, results) {
-            console.log(results.result);
-        });
-        response.json({"response": "ok"});
-
-        db.close();
-    });
-});
+//app.post('/online',function(request, response){
+//
+//    var username = request.body.username;
+//    var online = request.body.isOnline;
+//
+//    connectDb(function (db) {
+//        var coll = db.collection("users");
+//
+//        coll.updateOne({
+//            "username": username
+//        }, {
+//            $set: {
+//                "online": online
+//            }
+//        }, function(err, results) {
+//            console.log(results.result);
+//        });
+//        response.json({"response": "ok"});
+//
+//        db.close();
+//    });
+//});
 
 
 // --------------------------- Webrtc ------------------------- \\
@@ -145,7 +146,7 @@ var wsList = {};
 
 wss.on('connection', function(ws, req){
 
-    console.log(req.url)
+    //console.log(req.url)
     var cookies=cookie.parse(req.url.substr(1));
     console.log(cookies)
     var sid=cookieParser.signedCookie(cookies["connect.sid"],cookieSecret);
@@ -153,10 +154,13 @@ wss.on('connection', function(ws, req){
         sessionStore.createSession(req,ss)
 
         var user = ''
+        console.dir(req.session);
         if ('user' in req.session)
             user = req.session.user;
-        else
-            ws.close();
+        else{
+            console.log("user not logged in");
+            return;
+        }
 
         if (user in wsList){
             ws.close()
@@ -164,7 +168,7 @@ wss.on('connection', function(ws, req){
         } else {
             ws.user = user;
             wsList[user] = ws;
-            console.log('login success');
+            console.log('logged in as ' + user);
         }
 
         ws.on('close', function(){
